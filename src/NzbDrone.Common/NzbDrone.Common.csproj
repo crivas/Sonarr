@@ -173,6 +173,7 @@
     <Compile Include="PathEqualityComparer.cs" />
     <Compile Include="Extensions\PathExtensions.cs" />
     <Compile Include="Processes\PidFileProvider.cs" />
+    <Compile Include="Processes\ProcessAffinity.cs" />
     <Compile Include="Processes\ProcessOutput.cs" />
     <Compile Include="Processes\ProcessProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

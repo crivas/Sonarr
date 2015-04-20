@@ -33,6 +33,11 @@ namespace NzbDrone.Host
                 _container.Resolve<IAppFolderFactory>().Register();
                 _container.Resolve<IProvidePidFile>().Write();
 
+                if (OsInfo.IsLinux)
+                {
+                    _container.Resolve<ISetProcessAffinity>().InitializeAffinity();
+                }
+
                 var appMode = GetApplicationMode(startupContext);
 
                 Start(appMode, startupContext);

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Reflection;
+using Mono.Unix.Native;
 using NLog;
 using NzbDrone.Common.EnvironmentInfo;
+using NzbDrone.Common.Extensions;
 
 namespace NzbDrone.Mono
 {
@@ -41,5 +43,37 @@ namespace NzbDrone.Mono
                 return String.Empty;
             }
         }
+
+        public Version KernelVersion
+        {
+            get
+            {
+                try
+                {
+                    Utsname results;
+                    var res = Syscall.uname(out results);
+                    if (res != 0)
+                    {
+                        _logger.Debug("Failed to retrieve Kernel version. Syscall uname failed.");
+                        return null;
+                    }
+
+                    Version version;
+                    if (results.version.IsNullOrWhiteSpace() || !Version.TryParse(results.version.Replace('-', '.'), out version))
+                    {
+                        _logger.Debug("Failed to parse kernel version {0}.", results.version);
+                        return null;
+                    }
+
+                    return version;
+                }
+                catch (Exception ex)
+                {
+                    _logger.DebugException("Failed to retrieve Kernel version.", ex);
+                    return null;
+                }
+            }
+        }
+
     }
 }
