@@ -19,16 +19,12 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
         private readonly Logger _logger;
         private readonly HttpRequestBuilder _requestBuilder;
 
-        private static readonly Regex CollapseSpaceRegex = new Regex(@"\s+", RegexOptions.Compiled);
-        private static readonly Regex InvalidSearchCharRegex = new Regex(@"(?:\*|\(|\)|'|!|@|\+)", RegexOptions.Compiled);
-
         public SkyHookProxy(IHttpClient httpClient, Logger logger)
         {
             _httpClient = httpClient;
             _logger = logger;
 
-//            _requestBuilder = new HttpRequestBuilder("http://skyhook.sonarr.tv/v1/tvdb/{route}/en/");
-            _requestBuilder = new HttpRequestBuilder("http://localhost:2000/v1/tvdb/{route}/en/");
+            _requestBuilder = new HttpRequestBuilder("http://skyhook.sonarr.tv/v1/tvdb/{route}/en/");
         }
 
         public Tuple<Series, List<Episode>> GetSeriesInfo(int tvdbSeriesId)
@@ -75,7 +71,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     }
                 }
 
-                var term = GetSearchTerm(title.Trim());
+                var term = HttpUtility.UrlEncode((title.ToLower().Trim()));
                 var httpRequest = _requestBuilder.Build("?term={term}");
                 httpRequest.AddSegment("route", "search");
                 httpRequest.AddSegment("term", term);
@@ -93,7 +89,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 _logger.WarnException(ex.Message, ex);
                 throw new SkyHookException("Search for '{0}' failed. Invalid response received from SkyHook.", title);
             }
-            
         }
 
         private static Series MapSeries(ShowResource show)
@@ -245,24 +240,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 default:
                     return MediaCoverTypes.Unknown;
             }
-        }
-
-        private static string GetSearchTerm(string phrase)
-        {
-            phrase = phrase.RemoveAccent();
-            phrase = InvalidSearchCharRegex.Replace(phrase, "");
-
-            //            if (!phrase.Any(char.IsWhiteSpace) && phrase.Any(char.IsUpper) && phrase.Any(char.IsLower) && phrase.Length > 4)
-            //            {
-            //                phrase = ExpandCamelCaseRegEx.Replace(phrase, " ");
-            //            }
-
-            phrase = CollapseSpaceRegex.Replace(phrase, " ").Trim();
-            phrase = phrase.Trim('-');
-
-            phrase = HttpUtility.UrlEncode(phrase.ToLower());
-
-            return phrase;
         }
     }
 }
